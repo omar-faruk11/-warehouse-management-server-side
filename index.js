@@ -29,6 +29,7 @@ async function run () {
     });
 
     // read a data by id
+    // http://localhost:5000/bikes/626c843b9e3c0e5df2c06ce9
     app.get('/bikes/:id',async(req,res)=>{
       const id = req.params.id;
       const find = {_id:ObjectId(id)};
@@ -37,6 +38,7 @@ async function run () {
     });
     
     //  Update data using id 
+    // http://localhost:5000/bike/626c843b9e3c0e5df2c06ce9
     app.put('/bike/:id',async(req,res)=>{
       const id = req.params.id;
       const data = req.body;
@@ -52,6 +54,14 @@ async function run () {
       const result = await bikeCollection.updateOne(filter, updateDoc, options);
       res.send(result);
     });
+
+    // Delete a data using id
+    app.delete('/bike/:id',async(req,res)=>{
+      const id = req.params.id;
+      const filter = {_id: ObjectId(id)}
+      const result =await bikeCollection.deleteOne(filter)
+      res.send(result)
+    })
     
   }
   finally{
