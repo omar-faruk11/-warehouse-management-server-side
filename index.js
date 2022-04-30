@@ -29,13 +29,29 @@ async function run () {
     });
 
     // read a data by id
-    app.get('/bikes/:id',(req,res)=>{
+    app.get('/bikes/:id',async(req,res)=>{
       const id = req.params.id;
       const find = {_id:ObjectId(id)};
-      const bike = bikeCollection.findOne(find)
+      const bike =await bikeCollection.findOne(find)
       res.send(bike)
     });
+    
+    //  Update data using id 
+    app.put('/bike/:id',async(req,res)=>{
+      const id = req.params.id;
+      const data = req.body;
+      console.log(data);
+      const filter = {_id: ObjectId(id)};
+      const options = { upsert: true };
+      const updateDoc = {
 
+        $set: {
+          name: data.name
+        },
+      };
+      const result = await bikeCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
     
   }
   finally{
