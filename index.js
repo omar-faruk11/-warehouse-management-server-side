@@ -23,8 +23,9 @@ async function run () {
     // read all data
     app.get('/products',async(req,res)=>{
       const q = req.query;
+      const dataNeed = req.body.limit;
       const coursor = productCollection.find(q);
-      const result =await coursor.toArray();
+      const result =await coursor.limit(dataNeed).toArray();
       res.send(result);
     });
 
