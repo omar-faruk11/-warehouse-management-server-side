@@ -33,8 +33,8 @@ async function run () {
     app.get('/products/:id',async(req,res)=>{
       const id = req.params.id;
       const find = {_id:ObjectId(id)};
-      const bike =await productCollection.findOne(find)
-      res.send(bike)
+      const result = await productCollection.findOne(find)
+      res.send(result)
     });
     
     //  Update data using id 
