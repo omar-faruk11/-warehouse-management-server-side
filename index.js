@@ -36,9 +36,10 @@ async function run() {
       res.send(result);
     });
     // get products by Email addrress 
-    app.get('/products', async (req, res) => {
-      const q = req.body;
-      const coursor = productCollection.find(q);
+    app.get('/myitems',async (req, res) => {
+      const userEmail = req.query;
+      console.log(userEmail);
+      const coursor = productCollection.find(userEmail);
       const result = await coursor.toArray();
       res.send(result);
     });
@@ -94,10 +95,10 @@ async function run() {
     // await client.close();
   }
 }
-run().catch(console.dir)
+run().catch(console.dir);
 
 app.get('/', (req, res) => {
-  res.send('Hi, I am your awesome server')
+  res.send('Hi, I am your awesome server');
 });
 
 app.listen(port, () => {
