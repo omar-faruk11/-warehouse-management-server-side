@@ -1,12 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const {
   MongoClient,
   ServerApiVersion,
   ObjectId
 } = require('mongodb');
+const res = require('express/lib/response');
 const port = process.env.PORT || 5000;
 
 
@@ -14,7 +16,21 @@ const port = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors())
 
-
+const verifyJWT =(req,res,next) =>{
+  const authHeader = req.headers.authorization;
+  // console.log(authHeader);
+  if(!authHeader){
+    return res.status(401).send({message: "Unauthorized Access"})
+  };
+  const token = authHeader.split(' ')[1]
+  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(error,decoded)=>{
+    if(error){
+      return res.status(403).send({message: "Forbidden Access"});
+    }
+    req.decoded = decoded;
+    next()
+  })
+};
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tiivm.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -28,6 +44,14 @@ async function run() {
     await client.connect();
     const productCollection = client.db("bikeItems").collection("bikes");
     console.log('connected');
+    app.post('/login',(req,res)=>{
+      const user = req.body;
+      console.log(user);
+      const accessToken = jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{
+        expiresIn: '1d'
+      });
+      res.send(accessToken);
+    })
     // read all data
     app.get('/products', async (req, res) => {
       const q = req.query;
@@ -36,12 +60,18 @@ async function run() {
       res.send(result);
     });
     // get products by Email addrress 
-    app.get('/myitems',async (req, res) => {
+    app.get('/myitems',verifyJWT,async (req, res) => {
       const userEmail = req.query;
+      const decodedEmail = req.decoded.email;
+      console.log(decodedEmail);
       console.log(userEmail);
-      const coursor = productCollection.find(userEmail);
-      const result = await coursor.toArray();
-      res.send(result);
+      if(userEmail.email == decodedEmail){
+        const coursor = productCollection.find(userEmail);
+        const result = await coursor.toArray();
+        res.send(result);
+      }else{
+        res.status(403).send({message: 'forbidden access'})
+      };
     });
     // read a data by id
     // http://localhost:5000/bikes/626c843b9e3c0e5df2c06ce9
@@ -103,4 +133,4 @@ app.get('/', (req, res) => {
 
 app.listen(port, () => {
   console.log(`server running ${port}`);
-})
+});
