@@ -46,7 +46,6 @@ async function run() {
     console.log('connected');
     app.post('/login',(req,res)=>{
       const user = req.body;
-      console.log(user);
       const accessToken = jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{
         expiresIn: '1d'
       });
@@ -63,8 +62,6 @@ async function run() {
     app.get('/myitems',verifyJWT,async (req, res) => {
       const userEmail = req.query;
       const decodedEmail = req.decoded.email;
-      console.log(decodedEmail);
-      console.log(userEmail);
       if(userEmail.email == decodedEmail){
         const coursor = productCollection.find(userEmail);
         const result = await coursor.toArray();
@@ -126,6 +123,23 @@ async function run() {
   }
 }
 run().catch(console.dir);
+
+async function category (){
+  try{
+    await client.connect();
+    const categoryCollection = client.db("bikeItems").collection("category");
+    console.log('connect2');
+    app.get('/categorys', async(req,res)=>{
+      const q = req.query;
+      const coursor = categoryCollection.find(q);
+      const data = await coursor.toArray();
+      res.send(data);
+    })
+  }finally{
+    // await client.close();
+  }
+}
+category().catch(console.dir);
 
 app.get('/', (req, res) => {
   res.send('Hi, I am your awesome server');
